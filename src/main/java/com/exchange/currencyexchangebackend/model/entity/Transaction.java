@@ -1,5 +1,6 @@
 package com.exchange.currencyexchangebackend.model.entity;
 
+import com.exchange.currencyexchangebackend.model.enums.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,4 +30,5 @@ public class Transaction {
     private TransactionStatus status;
     private String notes;
     private LocalDateTime date;
+    private BigDecimal totalToPay;
 }
