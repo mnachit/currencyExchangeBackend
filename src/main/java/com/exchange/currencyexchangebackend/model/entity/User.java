@@ -1,5 +1,6 @@
 package com.exchange.currencyexchangebackend.model.entity;
 
+import com.exchange.currencyexchangebackend.model.enums.RoleUser;
 import jakarta.persistence.*;
 import jdk.jfr.Enabled;
 import lombok.*;
@@ -27,10 +28,14 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
+    private RoleUser role;
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 }

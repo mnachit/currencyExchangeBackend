@@ -15,5 +15,6 @@ public class Response<T> {
     private T result;
     private String error;
     private List<T> errors;
+    private int status;
     private Map<String, String> errorMap;
 }

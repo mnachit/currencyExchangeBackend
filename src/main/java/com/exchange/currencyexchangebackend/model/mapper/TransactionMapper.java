@@ -3,6 +3,8 @@ package com.exchange.currencyexchangebackend.model.mapper;
 import com.exchange.currencyexchangebackend.model.dto.TransactionDto;
 import com.exchange.currencyexchangebackend.model.entity.Transaction;
 
+import java.util.List;
+
 public class TransactionMapper {
     public static TransactionDto toTransactionDto(Transaction transaction) {
         return TransactionDto.builder()
@@ -17,7 +19,13 @@ public class TransactionMapper {
                 .exchangeRate(transaction.getExchangeRate())
                 .commissionFee(transaction.getCommissionFee())
                 .commissionPercentage(transaction.getCommissionPercentage())
-                .totalToPay(transaction.getTotalToPay())
+                .totalPaid(transaction.getTotalPaid())
+                .status(transaction.getStatus())
+                .createdAt(transaction.getCreatedAt())
+                .updatedAt(transaction.getUpdatedAt())
+                .month(transaction.getMonth())
+                .year(transaction.getYear())
+                .date(transaction.getDate())
                 .build();
     }
 
@@ -34,7 +42,21 @@ public class TransactionMapper {
         transaction.setExchangeRate(transactionDto.getExchangeRate());
         transaction.setCommissionFee(transactionDto.getCommissionFee());
         transaction.setCommissionPercentage(transactionDto.getCommissionPercentage());
-        transaction.setTotalToPay(transactionDto.getTotalToPay());
+        transaction.setTotalPaid(transactionDto.getTotalPaid());
+        transaction.setStatus(transactionDto.getStatus());
+        transaction.setCreatedAt(transactionDto.getCreatedAt());
+        transaction.setUpdatedAt(transactionDto.getUpdatedAt());
+        transaction.setMonth(transactionDto.getMonth());
+        transaction.setYear(transactionDto.getYear());
+        transaction.setDate(transactionDto.getDate());
         return transaction;
+    }
+
+    public static List<TransactionDto> toTransactionDtos(List<Transaction> transactions) {
+        return transactions.stream().map(TransactionMapper::toTransactionDto).toList();
+    }
+
+    public static List<Transaction> toTransactions(List<TransactionDto> transactionDtos) {
+        return transactionDtos.stream().map(TransactionMapper::toTransaction).toList();
     }
 }

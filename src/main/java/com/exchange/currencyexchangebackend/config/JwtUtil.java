@@ -2,6 +2,11 @@ package com.exchange.currencyexchangebackend.config;
 
 
 import com.exchange.currencyexchangebackend.model.entity.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;

@@ -23,6 +23,7 @@ public class Loan {
     private String currency;
     private LocalDate issueDate;
     private LocalDate dueDate;
+    @Enumerated(EnumType.STRING)
     private LoanStatus status;
     private String notes;
     private BigDecimal interestRate;

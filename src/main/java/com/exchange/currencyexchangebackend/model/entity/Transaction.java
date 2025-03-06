@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -22,13 +23,18 @@ public class Transaction {
     private String phoneNumber;
     private String fromCurrency;
     private BigDecimal fromAmount;
+    private String month;
+    private String year;
     private String toCurrency;
     private BigDecimal toAmount;
     private BigDecimal exchangeRate;
     private BigDecimal commissionFee;
     private BigDecimal commissionPercentage;
+    @Enumerated(EnumType.STRING)
     private TransactionStatus status;
     private String notes;
-    private LocalDateTime date;
-    private BigDecimal totalToPay;
+    private String date;
+    private BigDecimal totalPaid;
+    private Date createdAt;
+    private Date updatedAt;
 }
