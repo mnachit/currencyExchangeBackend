@@ -12,4 +12,8 @@ public class TransactionStatistic {
     private BigDecimal availableFunds;
     private BigDecimal activeLoans;
     private BigDecimal todayProfit;
+    private BigDecimal fundsTrend;
+    private BigDecimal exchangesTrend;
+    private BigDecimal loansTrend;
+    private BigDecimal profitTrend;
 }

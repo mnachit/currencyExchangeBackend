@@ -16,11 +16,8 @@ public class CompanyDto {
     private String phone;
     @NotBlank(message = "email is mandatory")
     private String email;
-//    @NotBlank(message = "website is mandatory")
     private String website;
-//    @NotBlank(message = "logoUrl is mandatory")
     private String logoUrl;
-//    @NotBlank(message = "description is mandatory")
     private String description;
     @NotBlank(message = "city is mandatory")
     private String city;
@@ -28,6 +25,8 @@ public class CompanyDto {
     private String postalCode;
     @NotBlank(message = "street is mandatory")
     private String street;
-//    @NotBlank(message = "houseNumber is mandatory")
     private String houseNumber;
+    private String nameManager;
+    private String emailManager;
+    private String passwordManager;
 }

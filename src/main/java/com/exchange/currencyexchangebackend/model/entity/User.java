@@ -28,6 +28,7 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
+    @Enumerated(EnumType.STRING)
     private RoleUser role;
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -38,4 +39,6 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
+    private boolean active;
+    private boolean locked;
 }

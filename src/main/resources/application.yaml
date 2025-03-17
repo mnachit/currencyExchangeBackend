@@ -6,6 +6,8 @@ server:
     include-binding-errors: always
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   output:
     ansi:
       enabled: always
@@ -26,3 +28,20 @@ spring:
 
   liquibase:
     change-log: classpath:./db/changelog/changelog-master.xml
+
+# Google Sheets Configuration
+# Application Configuration
+application:
+  name: googlesheetsDemo
+
+# Google Sheets Configuration
+spreadsheet:
+  id: 1kF-OFH51mvWd-3Le5or4L7wBubIoHde0nJdqZrUrofc/edit?gid=0#gid=0
+
+credentials:
+  file:
+    path: ./credentials.json
+
+tokens:
+  directory:
+    path: tokens

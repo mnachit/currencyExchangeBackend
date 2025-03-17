@@ -8,6 +8,7 @@ import java.util.List;
 public class TransactionMapper {
     public static TransactionDto toTransactionDto(Transaction transaction) {
         return TransactionDto.builder()
+                .id(transaction.getId())
                 .customerName(transaction.getCustomerName())
                 .customerId(transaction.getCustomerId())
                 .idNumber(transaction.getIdNumber())
@@ -23,14 +24,19 @@ public class TransactionMapper {
                 .status(transaction.getStatus())
                 .createdAt(transaction.getCreatedAt())
                 .updatedAt(transaction.getUpdatedAt())
+                .day(transaction.getDay())
                 .month(transaction.getMonth())
                 .year(transaction.getYear())
                 .date(transaction.getDate())
+                .company(transaction.getCompany())
+                .createdBy(transaction.getCreatedBy())
+                .updatedBy(transaction.getUpdatedBy())
                 .build();
     }
 
     public static Transaction toTransaction(TransactionDto transactionDto) {
         Transaction transaction = new Transaction();
+        transaction.setId(transactionDto.getId());
         transaction.setCustomerName(transactionDto.getCustomerName());
         transaction.setCustomerId(transactionDto.getCustomerId());
         transaction.setIdNumber(transactionDto.getIdNumber());
@@ -44,11 +50,15 @@ public class TransactionMapper {
         transaction.setCommissionPercentage(transactionDto.getCommissionPercentage());
         transaction.setTotalPaid(transactionDto.getTotalPaid());
         transaction.setStatus(transactionDto.getStatus());
+        transaction.setDay(transactionDto.getDay());
         transaction.setCreatedAt(transactionDto.getCreatedAt());
         transaction.setUpdatedAt(transactionDto.getUpdatedAt());
         transaction.setMonth(transactionDto.getMonth());
         transaction.setYear(transactionDto.getYear());
         transaction.setDate(transactionDto.getDate());
+        transaction.setCompany(transactionDto.getCompany());
+        transaction.setCreatedBy(transactionDto.getCreatedBy());
+        transaction.setUpdatedBy(transactionDto.getUpdatedBy());
         return transaction;
     }
 

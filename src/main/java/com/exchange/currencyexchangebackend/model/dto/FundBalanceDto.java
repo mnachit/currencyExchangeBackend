@@ -1,5 +1,6 @@
 package com.exchange.currencyexchangebackend.model.dto;
 
+import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.model.entity.User;
 import com.exchange.currencyexchangebackend.model.enums.Currency;
 import com.exchange.currencyexchangebackend.model.enums.OperationFunds;
@@ -27,4 +28,6 @@ public class FundBalanceDto {
     private Date createdAt;
     private Date updatedAt;
     private Long updatedById;
+    private Company company;
+    private User createdBy;
 }

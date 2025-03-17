@@ -13,10 +13,11 @@ public class FundBalanceMapper {
                 .currency(fundBalance.getCurrency())
                 .amount(fundBalance.getAmount())
                 .notes(fundBalance.getNotes())
-                .updateBy(fundBalance.getUpdateBy())
+                .updateBy(fundBalance.getCreateBy())
                 .createdAt(fundBalance.getCreatedAt())
                 .updatedAt(fundBalance.getUpdatedAt())
                 .code(fundBalance.getCode())
+                .company(fundBalance.getCompany())
                 .build();
     }
 
@@ -29,6 +30,8 @@ public class FundBalanceMapper {
         fundBalance.setCode(fundBalanceDto.getCode());
         fundBalance.setCreatedAt(fundBalanceDto.getCreatedAt());
         fundBalance.setUpdatedAt(fundBalanceDto.getUpdatedAt());
+        fundBalance.setCompany(fundBalanceDto.getCompany());
+        fundBalance.setCreateBy(fundBalanceDto.getCreatedBy());
         return fundBalance;
     }
 

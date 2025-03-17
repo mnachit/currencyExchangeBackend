@@ -1,7 +1,13 @@
 package com.exchange.currencyexchangebackend.service.impl;
 
 import com.exchange.currencyexchangebackend.exception.ValidationException;
+import com.exchange.currencyexchangebackend.model.entity.Company;
+import com.exchange.currencyexchangebackend.model.entity.Permissions;
 import com.exchange.currencyexchangebackend.model.entity.User;
+import com.exchange.currencyexchangebackend.model.enums.NamePermission;
+import com.exchange.currencyexchangebackend.model.enums.RoleUser;
+import com.exchange.currencyexchangebackend.repository.CompanyRepository;
+import com.exchange.currencyexchangebackend.repository.PermissionsRepository;
 import com.exchange.currencyexchangebackend.repository.UserRepository;
 import com.exchange.currencyexchangebackend.service.UserService;
 import com.exchange.currencyexchangebackend.util.ErrorMessage;
@@ -18,6 +24,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final CompanyRepository companyRepository;
+    private final PermissionsRepository permissionsRepository;
 
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -80,4 +88,65 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         return user;
     }
+
+    @Override
+    public boolean isEmailExist(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean saveUser(User user, List<NamePermission> namePermission, RoleUser roleUser, Long companyId) throws ValidationException {
+        List<ErrorMessage> errorMessages = new ArrayList<>();
+        if (userRepository.findByEmail(user.getEmail()).isPresent())
+            errorMessages.add(ErrorMessage.builder().message("Email already exists").build());
+        if (errorMessages.size() > 0)
+            throw new ValidationException(errorMessages);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(roleUser);
+        user.setCompany(companyRepository.findById(companyId).isPresent() ? companyRepository.findById(companyId).get() : null);
+        user.setCreatedAt(new Date());
+        user.setUpdatedAt(new Date());
+        user.setActive(true);
+        user.setLocked(false);
+        userRepository.save(user);
+        Permissions permissions = new Permissions();
+        for (NamePermission namePermission1 : namePermission) {
+            permissions.setName(namePermission1);
+            permissions.setUser(user);
+            permissionsRepository.save(permissions);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean checkRoleUser(Long userId, NamePermission namePermission) throws ValidationException{
+        User user = userRepository.findById(userId).isPresent() ? userRepository.findById(userId).get() : null;
+        List<ErrorMessage> errorMessages = new ArrayList<>();
+        if (user.getRole().equals(RoleUser.MANAGER)) {
+            return true;
+        }
+        if (user.getRole().equals(RoleUser.ADMIN) && permissionsRepository.findByNameAndUser(namePermission, user)) {
+            return true;
+        }
+        errorMessages.add(ErrorMessage.builder().message("Permission denied").build());
+        throw new ValidationException(errorMessages);
+    }
+
+    @Override
+    public Company getCompanyByUserId(Long userId) {
+        return userRepository.getCompanyByUserId(userId).get();
+    }
+
+    @Override
+    public User getUserById(Long userId) throws ValidationException {
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new ValidationException(List.of(ErrorMessage.builder().message("User not found").build()));
+        }
+        return userRepository.findById(userId).get();
+    }
+
+
 }

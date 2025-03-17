@@ -25,6 +25,7 @@ public class Transaction {
     private BigDecimal fromAmount;
     private String month;
     private String year;
+    private String day;
     private String toCurrency;
     private BigDecimal toAmount;
     private BigDecimal exchangeRate;
@@ -37,4 +38,13 @@ public class Transaction {
     private BigDecimal totalPaid;
     private Date createdAt;
     private Date updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+    @ManyToOne
+    @JoinColumn(name = "created_by_id")
+    private User createdBy;
+    @ManyToOne
+    @JoinColumn(name = "updated_by_id")
+    private User updatedBy;
 }

@@ -13,15 +13,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig  {
+public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthorizationFilter jwtAuthenticationFilter;
 
+    // Injectez votre configuration CORS
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, NoOpPasswordEncoder noOpPasswordEncoder)
@@ -30,13 +33,13 @@ public class SecurityConfig  {
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(noOpPasswordEncoder);
         return authenticationManagerBuilder.build();
     }
-
+///api/rest/auth/**
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.csrf(csrf -> csrf.disable())
+                // Activez CORS ici
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/api/rest/auth/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
