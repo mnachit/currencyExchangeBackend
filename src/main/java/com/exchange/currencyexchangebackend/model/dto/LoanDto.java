@@ -17,6 +17,7 @@ import java.util.Date;
 @Validated
 @Builder
 public class LoanDto {
+    private Long id;
     private String customerName;
     private String customerId;
     private BigDecimal amount;

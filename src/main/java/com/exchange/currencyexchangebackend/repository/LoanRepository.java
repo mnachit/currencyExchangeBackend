@@ -19,7 +19,7 @@ import java.util.List;
 public interface LoanRepository extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
     @Query("select sum(t.amount) from Loan t where t.status = :status and t.company = :company")
     BigDecimal countByStatus(LoanStatus status, Company company);
-    Page<Loan> findByCompany(Company company, Pageable pageable);
+    Page<Loan> findByCompanyOrderByIdDesc(Company company, Pageable pageable);
     @Query(value = "SELECT t FROM Loan t WHERE t.company = :company")
     Page<Loan> PaginatedLoanWithCompany(Pageable pageable, Company company);
 

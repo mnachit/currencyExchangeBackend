@@ -21,5 +21,5 @@ import java.util.List;
 public interface FundBalanceRepository extends JpaRepository<FundBalance, Long>, JpaSpecificationExecutor<FundBalance> {
     @Query("select sum(f.amount) from FundBalance f where f.currency = :currency and f.createBy = :user and f.operationFunds = :operationFunds and f.company = :company")
     BigDecimal getAvailableBalanceWithCurrencyAndOperationFunds(@Param("user") User user, @Param("currency") Currency currency, @Param("operationFunds") OperationFunds operationFunds, @Param("company") Company company);//findAllOrderByCreatedAtDesc
-    List<FundBalance> findAllByCompanyOrderByCreatedAtDesc(@Param("company") Company company);
+    List<FundBalance> findTop10ByCompanyOrderByCreatedAtDesc(@Param("company") Company company);
 }

@@ -36,15 +36,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -93,6 +95,15 @@ public class TransactionServiceImpl implements TransactionService {
         fundBalanceDeposit.setNotes("Deposit from " + transactionDto.getFromCurrency() + " to " + transactionDto.getToCurrency());
         fundBalanceService.saveFundBalance(FundBalanceMapper.toDto(fundBalanceWithdraw), company, user.getId());
         fundBalanceService.saveFundBalance(FundBalanceMapper.toDto(fundBalanceDeposit), company, user.getId());
+        RecentActivities recentActivities = new RecentActivities();
+        recentActivities.setAction("Transaction");
+        recentActivities.setDescription("Transaction from " + transactionDto.getFromCurrency() + " to " + transactionDto.getToCurrency());
+        recentActivities.setIcon("fa-user-plus");
+        recentActivities.setType("success");
+        recentActivities.setKind("transaction");
+        recentActivities.setCompany(company);
+        recentActivities.setTime(new Date());
+        recentReportsService.saveRecentActivities(recentActivities, company);
         return transactionDto;
     }
 
@@ -208,6 +219,9 @@ public class TransactionServiceImpl implements TransactionService {
         transactionStatistic.setTodayProfit(BigDecimal.valueOf(01));
         transactionStatistic.setAvailableFunds(BigDecimal.valueOf(01));
         transactionStatistic.setExchangesTrend(exchangesTrend);
+        transactionStatistic.setCompletedTransactions(transactionRepository.countByStatusAndCompany(TransactionStatus.COMPLETED, company));
+        transactionStatistic.setPendingTransactions(transactionRepository.countByStatusAndCompany(TransactionStatus.PENDING, company));
+        transactionStatistic.setCanceledTransactions(transactionRepository.countByStatusAndCompany(TransactionStatus.CANCELED, company));
 
         return transactionStatistic;
     }
@@ -228,14 +242,10 @@ public class TransactionServiceImpl implements TransactionService {
         List<Object[]> transactions = transactionRepository.getRecentTransactionsLast3Months(company.getId());
 
         for (Object[] transaction : transactions) {
+
             TransactionDtoFilter dto = new TransactionDtoFilter();
-            // Skip days (index 0) since it's NULL
-            // Skip weeks (index 1) since it's NULL
-            // Get months at index 2
             dto.setMonths(transaction[2] != null ? transaction[2].toString() : null);
-            // Get count at index 3
             dto.setCount(transaction[3] != null ? Long.parseLong(transaction[3].toString()) : 0L);
-            // Get WeekLabel at index 4 (which contains the month abbreviation)
             dto.setWeekLabel(transaction[4] != null ? transaction[4].toString() : null);
 
             transactionDtoFilters.add(dto);
@@ -311,13 +321,16 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public boolean deleteTransactions(List<Long> id) throws ValidationException {
+    public boolean deleteTransactions(List<Long> id,  User user, Company company) throws ValidationException {
         List<ErrorMessage> errorMessages = new ArrayList<>();
         for (Long transactionId : id) {
             Optional<Transaction> transaction = transactionRepository.findById(transactionId);
             if (transaction.isPresent()) {
                 transactionRepository.delete(transaction.get());
-                historyRepository.save(HistoryMapper.toHistory(transaction.get()));
+                History history = new History();
+                history = HistoryMapper.toHistory(transaction.get());
+                history.setDeletedBy(user);
+                historyRepository.save(history);
             } else {
                 errorMessages.add(ErrorMessage.builder().status(400).message("Transaction not found").build());
             }
@@ -515,6 +528,157 @@ public class TransactionServiceImpl implements TransactionService {
                     .build());
             throw new ValidationException(errorMessages);
         }
+    }
+
+    @Override
+    public int importTransactionsFromExcel(MultipartFile file, Authentication authentication, Company company, User user) throws IOException {
+
+        Workbook workbook = WorkbookFactory.create(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+
+        List<Transaction> transactions = new ArrayList<>();
+        int rowCount = 0;
+
+        // Skip header row
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) {
+                // Validate header row
+                validateHeaderRow(row);
+                continue;
+            }
+
+            // Skip empty rows by checking if all cells are empty
+            boolean isEmpty = true;
+            for (int i = 0; i < 8; i++) { // Check the 8 columns we expect data in
+                Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                if (cell != null && cell.getCellType() != CellType.BLANK) {
+                    String cellValue = cell.toString().trim();
+                    if (!cellValue.isEmpty()) {
+                        isEmpty = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isEmpty) {
+                continue; // Skip this row if it's empty
+            }
+
+            try {
+                Transaction transaction = mapRowToTransaction(row);
+
+                // Set required fields
+                transaction.setCompany(company);
+                transaction.setCreatedBy(user);
+                transaction.setCreatedAt(new Date());
+                transaction.setStatus(TransactionStatus.COMPLETED);
+
+                // Set date/time fields
+                transaction.setDate(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                transaction.setMonth(new SimpleDateFormat("MMMM").format(new Date()));
+                transaction.setYear(new SimpleDateFormat("yyyy").format(new Date()));
+                transaction.setUpdatedAt(new Date());
+
+                transactions.add(transaction);
+                rowCount++;
+            } catch (Exception e) {
+                throw new IOException("Error processing row " + (row.getRowNum() + 1) + ": " + e.getMessage());
+            }
+        }
+
+        workbook.close();
+
+        if (!transactions.isEmpty()) {
+            transactionRepository.saveAll(transactions);
+        }
+
+        return rowCount;
+    }
+
+    @Override
+    public ResponseEntity<ByteArrayResource> exportAllExcel(Company company) throws ValidationException{
+        try {
+            List<Transaction> transactions = transactionRepository.findAllByCompany(company);
+            return generateExcelReport(transactions, company, new ReportsDto());
+        } catch (Exception e) {
+            log.error("Error exporting transactions to Excel", e);
+            List<ErrorMessage> errorMessages = new ArrayList<>();
+            errorMessages.add(ErrorMessage.builder()
+                    .status(500)
+                    .message("Error exporting transactions to Excel: " + e.getMessage())
+                    .build());
+            throw new ValidationException(errorMessages);
+        }
+    }
+
+    private void validateHeaderRow(Row headerRow) throws IOException {
+        // Expected header names in order
+        String[] expectedHeaders = {
+                "customerName", "exchangeRate", "fromAmount",
+                "fromCurrency", "phoneNumber", "toAmount",
+                "toCurrency", "totalPaid"
+        };
+
+        for (int i = 0; i < expectedHeaders.length; i++) {
+            Cell cell = headerRow.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+            String header = cell.getStringCellValue().trim();
+
+            if (!header.equalsIgnoreCase(expectedHeaders[i])) {
+                throw new IOException("Invalid header at column " + (i + 1) + ". Expected '" +
+                        expectedHeaders[i] + "' but found '" + header + "'");
+            }
+        }
+    }
+
+    private Transaction mapRowToTransaction(Row row) throws Exception {
+        Transaction transaction = new Transaction();
+
+        transaction.setCustomerName(getCellStringValue(row, 0));
+        transaction.setExchangeRate(getCellBigDecimalValue(row, 1));
+        transaction.setFromAmount(getCellBigDecimalValue(row, 2));
+        transaction.setFromCurrency(getCellStringValue(row, 3));
+        transaction.setPhoneNumber(getCellStringValue(row, 4));
+        transaction.setToAmount(getCellBigDecimalValue(row, 5));
+        transaction.setToCurrency(getCellStringValue(row, 6));
+        transaction.setTotalPaid(getCellBigDecimalValue(row, 7));
+
+        return transaction;
+    }
+
+    private String getCellStringValue(Row row, int cellIndex) {
+        Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+        cell.setCellType(CellType.STRING);
+        return cell.getStringCellValue().trim();
+    }
+
+    private BigDecimal getCellBigDecimalValue(Row row, int cellIndex) {
+        Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return BigDecimal.valueOf(cell.getNumericCellValue());
+            case STRING:
+                String value = cell.getStringCellValue().trim();
+                return value.isEmpty() ? BigDecimal.ZERO : new BigDecimal(value);
+            default:
+                return BigDecimal.ZERO;
+        }
+    }
+
+    private LocalDateTime getCellDateValue(Row row, int cellIndex) {
+        Cell cell = row.getCell(cellIndex, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            Date date = cell.getDateCellValue();
+            return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } else if (cell.getCellType() == CellType.STRING) {
+            String dateStr = cell.getStringCellValue().trim();
+            // You might need a more sophisticated date parser here
+            // This is just a simple example assuming ISO format
+            return LocalDateTime.parse(dateStr);
+        }
+
+        return LocalDateTime.now();
     }
 
     /**

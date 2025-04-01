@@ -4,6 +4,7 @@ import com.exchange.currencyexchangebackend.model.dto.TransactionDtoFilter;
 import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.model.entity.Transaction;
 import com.exchange.currencyexchangebackend.model.enums.Currency;
+import com.exchange.currencyexchangebackend.model.enums.TransactionStatus;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
     @Query("select count(t) from Transaction t where t.month = :month")
     BigDecimal countByMonthAndCompany(@Param("month") String month, Company company);
+    BigDecimal countByStatusAndCompany(TransactionStatus transactionStatus, Company company);
     List<Transaction> findTop4ByCompanyOrderByCreatedAtDesc(Company company);
     List<Transaction> findTop4ByOrderByCreatedAtDesc();
     @Query("select SUM(t.totalPaid) from Transaction t where t.day = :day and t.toCurrency = :currency")
@@ -97,7 +99,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "       COALESCE(COUNT(t.id), 0) AS count,\n" +
             "       DATE_FORMAT(STR_TO_DATE(d.month_id, '%Y-%m'), '%b') AS WeekLabel\n" +
             "FROM date_ranges d\n" +
-            "LEFT JOIN transaction t ON (DATE(t.created_at) BETWEEN d.start_date AND d.end_date AND t.company_id = :companyId\n" +
+            "LEFT JOIN transaction t ON (DATE(t.created_at) BETWEEN d.start_date AND d.end_date AND t.company_id = :companyId)\n" +
             "GROUP BY d.month_id, d.month_num, d.start_date, d.end_date\n" +
             "ORDER BY d.month_num", nativeQuery = true)
     List<Object[]> getRecentTransactionsLast3Months(@Param("companyId") Long companyId);
@@ -126,6 +128,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "ORDER BY d.month_num", nativeQuery = true)
     List<Object[]> getRecentTransactionsLast12Months(@Param("companyId") Long companyId);
     Page<Transaction> findByCompany(Company company, Pageable pageable);
-    @Query(value = "SELECT t FROM Transaction t WHERE t.company = :company")
+    @Query(value = "SELECT t FROM Transaction t WHERE t.company = :company order by t.createdAt desc")
     Page<Transaction> PaginatedTransactionsWithCompany(Pageable pageable, Company company);
+    @Query(value = "SELECT t FROM Transaction t WHERE t.company = :companyorder order by t.id desc")
+    List<Transaction> findAllByCompany(Company company);
 }

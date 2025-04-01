@@ -16,4 +16,7 @@ public class TransactionStatistic {
     private BigDecimal exchangesTrend;
     private BigDecimal loansTrend;
     private BigDecimal profitTrend;
+    private BigDecimal completedTransactions;
+    private BigDecimal pendingTransactions;
+    private BigDecimal canceledTransactions;
 }

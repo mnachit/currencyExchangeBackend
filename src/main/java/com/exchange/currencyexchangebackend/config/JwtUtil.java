@@ -45,6 +45,7 @@ public class JwtUtil {
         claims.put("id", user.getId());
         claims.put("email", user.getEmail());
         claims.put("role", user.getRole());
+        claims.put("fullName", user.getFullName());
         claims.put("company", user.getCompany());
 
 //        claims.put("permissions", user.getPermissions()); // إذا كانت متوفرة

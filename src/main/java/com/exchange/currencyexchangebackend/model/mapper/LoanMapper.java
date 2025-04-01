@@ -12,6 +12,7 @@ public class LoanMapper {
 
     public static LoanDto toLoanDto(Loan loan) {
         return LoanDto.builder()
+                .id(loan.getId())
                 .customerName(loan.getCustomerName())
                 .customerId(loan.getId().toString())
                 .amount(loan.getAmount())

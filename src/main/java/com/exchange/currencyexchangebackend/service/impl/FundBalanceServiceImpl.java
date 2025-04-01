@@ -70,7 +70,7 @@ public class FundBalanceServiceImpl implements FundBalanceService {
 
     @Override
     public List<FundBalanceDto> getFundBalanceList(Company company) {
-        return FundBalanceMapper.toDtos(fundBalanceRepository.findAllByCompanyOrderByCreatedAtDesc(company));
+        return FundBalanceMapper.toDtos(fundBalanceRepository.findTop10ByCompanyOrderByCreatedAtDesc(company));
     }
 
     @Override

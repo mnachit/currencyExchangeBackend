@@ -72,14 +72,21 @@ public class ReportController {
                 }
             }
 
-            ReportsDto reportsDto = ReportsDto.builder()
-                    .format(format)
-                    .startDate(parsedStartDate)
-                    .endDate(parsedEndDate)
-                    .currency(currencyEnum)
-                    .status(status)
-                    .reportType("transactions")
-                    .build();
+//            ReportsDto reportsDto = ReportsDto.builder()
+//                    .format(format)
+//                    .startDate(parsedStartDate)
+//                    .endDate(parsedEndDate)
+//                    .currency(currencyEnum)
+//                    .status(status)
+//                    .reportType("transactions")
+//                    .build();
+            ReportsDto reportsDto = new ReportsDto();
+            reportsDto.setFormat(format);
+            reportsDto.setStartDate(parsedStartDate);
+            reportsDto.setEndDate(parsedEndDate);
+            reportsDto.setCurrency(currencyEnum);
+            reportsDto.setStatus(status);
+            reportsDto.setReportType("transactions");
 
             return transactionService.generateTransactionReport(reportsDto, company);
         } catch (ParseException e) {
@@ -134,13 +141,20 @@ public class ReportController {
                 }
             }
 
-            ReportsDto reportsDto = ReportsDto.builder()
-                    .format(format)
-                    .startDate(parsedStartDate)
-                    .endDate(parsedEndDate)
-                    .currency(currencyEnum)
-                    .reportType("funds")
-                    .build();
+//            ReportsDto reportsDto = ReportsDto.builder()
+//                    .format(format)
+//                    .startDate(parsedStartDate)
+//                    .endDate(parsedEndDate)
+//                    .currency(currencyEnum)
+//                    .reportType("funds")
+//                    .build();
+
+            ReportsDto reportsDto = new ReportsDto();
+            reportsDto.setFormat(format);
+            reportsDto.setStartDate(parsedStartDate);
+            reportsDto.setEndDate(parsedEndDate);
+            reportsDto.setCurrency(currencyEnum);
+            reportsDto.setReportType("funds");
 
             return fundBalanceService.generateFundsReport(reportsDto, company);
         } catch (ParseException e) {
@@ -196,14 +210,23 @@ public class ReportController {
                 }
             }
 
-            ReportsDto reportsDto = ReportsDto.builder()
-                    .format(format)
-                    .startDate(parsedStartDate)
-                    .endDate(parsedEndDate)
-                    .currency(currencyEnum)
-                    .status(status)
-                    .reportType("loans")
-                    .build();
+//            ReportsDto reportsDto = ReportsDto.builder()
+//                    .format(format)
+//                    .startDate(parsedStartDate)
+//                    .endDate(parsedEndDate)
+//                    .currency(currencyEnum)
+//                    .status(status)
+//                    .reportType("loans")
+//                    .build();
+
+
+            ReportsDto reportsDto = new ReportsDto();
+            reportsDto.setFormat(format);
+            reportsDto.setStartDate(parsedStartDate);
+            reportsDto.setEndDate(parsedEndDate);
+            reportsDto.setCurrency(currencyEnum);
+            reportsDto.setStatus(status);
+            reportsDto.setReportType("loans");
 
             return loanService.generateLoanReport(reportsDto, company);
         } catch (ParseException e) {
@@ -219,6 +242,17 @@ public class ReportController {
         response.setMessage("Recent reports");
         response.setStatus(200);
         response.setResult(recentReportsService.getRecent5Reports(company));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/recentActivities/{kind}")
+    private ResponseEntity<?> recentReportsWithType(@RequestHeader("Authorization") String token, @PathVariable String kind) {
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        Response response = new Response<>();
+        response.setMessage("Recent reports");
+        response.setStatus(200);
+        response.setResult(recentReportsService.recentReportsWithType(company, kind));
         return ResponseEntity.ok(response);
     }
 }

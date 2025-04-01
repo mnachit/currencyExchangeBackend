@@ -41,4 +41,8 @@ public class User {
     private Company company;
     private boolean active;
     private boolean locked;
+    private String phoneNumber;
+    private String address;
+    private String notes;
+    private String avatarUrl;
 }

@@ -12,8 +12,11 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -33,7 +36,11 @@ public interface TransactionService {
     public List<TransactionDtoFilter> getRecentTransactionsLast4Weeks(Company company);
     public List<TransactionDtoFilter> getRecentTransactionsLast12Months(Company company);
     //deleteTransactions
-    public boolean deleteTransactions(List<Long> id) throws ValidationException;
+    public boolean deleteTransactions(List<Long> id, User user, Company company) throws ValidationException;
     public ResponseEntity<ByteArrayResource> exportExcel(List<Long> ids) throws ValidationException;
     public ResponseEntity<ByteArrayResource> generateTransactionReport(ReportsDto reportsDto, Company company);
+    int importTransactionsFromExcel(MultipartFile file, Authentication authentication, Company company, User user) throws IOException;
+    public ResponseEntity<ByteArrayResource> exportAllExcel(Company company) throws ValidationException;
+
+
 }

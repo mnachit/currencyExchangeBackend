@@ -17,8 +17,10 @@ import java.util.List;
 public interface LoanService {
     public LoanDto saveLoan(LoanDto loan, Company company, Long idUser) throws ValidationException;
 
+    public LoanDto UpdateLoan(LoanDto loan, Company company, Long idUser) throws ValidationException;
+
     Page<LoanDto> getPaginatedLoans(Pageable pageable, Company company);
-    Page<LoanDto> getLoanList(String searchTerm, String status, String date, String currency, Pageable pageable, Company company);
+    Page<LoanDto> getLoanList(String searchTerm, String status, String date, String currency, String amountMin, String amountMax, Pageable pageable, Company company);
     public boolean deleteLoans(List<Long> id, Company company) throws ValidationException;
     public boolean changeLoanStatus(Long id, LoanStatus status, Company company) throws ValidationException;
     //generateLoanReport

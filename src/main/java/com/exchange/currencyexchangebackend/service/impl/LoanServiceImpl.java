@@ -65,13 +65,36 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    public LoanDto UpdateLoan(LoanDto loan, Company company, Long idUser) throws ValidationException {
+        if (loan.getId() == null)
+            throw new ValidationException(List.of(ErrorMessage.builder().message("Loan ID is required").build()));
+        else
+        {
+            Loan loan1 = loanRepository.findById(loan.getId()).get();
+            loan1.setAmount(loan.getAmount());
+            loan1.setCollateral(loan.getCollateral());
+            loan1.setCurrency(loan.getCurrency());
+            loan1.setCustomerName(loan.getCustomerName());
+            loan1.setDueDate(loan.getDueDate());
+            loan1.setInterestRate(loan.getInterestRate());
+            loan1.setIssueDate(loan.getIssueDate());
+            loan1.setNotes(loan.getNotes());
+            loan1.setStatus(loan.getStatus());
+            loan1.setIsConfidential(loan.getIsConfidential());
+            loan1.setCompany(company);
+            loan1.setUpdatedAt(new Date());
+            return LoanMapper.toLoanDto(loanRepository.save(loan1));
+        }
+    }
+
+    @Override
     public Page<LoanDto> getPaginatedLoans(Pageable pageable, Company company) {
-        Page<Loan> loanPage = loanRepository.findByCompany(company, pageable);
+        Page<Loan> loanPage = loanRepository.findByCompanyOrderByIdDesc(company, pageable);
         return loanPage.map(LoanMapper::toLoanDto);
     }
 
     @Override
-    public Page<LoanDto> getLoanList(String searchTerm, String status, String date, String currency,
+    public Page<LoanDto> getLoanList(String searchTerm, String status, String date, String currency, String amountMin, String amountMax,
                                      Pageable pageable, Company company) {
 
         Specification<Loan> spec = (root, query, criteriaBuilder) -> {
@@ -107,6 +130,16 @@ public class LoanServiceImpl implements LoanService {
             // Status filter
             if (status != null && !status.isEmpty() && !status.equals("all")) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (amountMin != null && !amountMin.isEmpty()) {
+                BigDecimal minAmount = new BigDecimal(amountMin);
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount));
+            }
+
+            if (amountMax != null && !amountMax.isEmpty()) {
+                BigDecimal maxAmount = new BigDecimal(amountMax);
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount));
             }
 
             // Date filter

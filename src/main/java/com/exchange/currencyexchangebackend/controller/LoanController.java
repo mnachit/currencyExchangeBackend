@@ -43,6 +43,8 @@ public class LoanController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String date,
             @RequestParam(required = false) String currency,
+            @RequestParam(required = false) String amountMin,
+            @RequestParam(required = false) String amountMax,
             @RequestHeader(value = "Authorization", required = false) String token) {
 
         Long idUser = JwtUtil.extractUserId(token);
@@ -51,8 +53,8 @@ public class LoanController {
         Pageable pageable = PageRequest.of(page, size);
 
         response.setMessage("Loan list");
-        if (searchTerm != null || status != null || date != null || currency != null) {
-            response.setResult(loanService.getLoanList(searchTerm, status, date, currency, pageable, company));
+        if (searchTerm != null || status != null || date != null || currency != null || amountMin != null || amountMax != null) {
+            response.setResult(loanService.getLoanList(searchTerm, status, date, currency,amountMin, amountMax ,pageable, company));
         } else {
             response.setResult(loanService.getPaginatedLoans(pageable, company));
         }
@@ -70,7 +72,18 @@ public class LoanController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/status/{id}/{status}")
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> updateLoan(@PathVariable Long id, @RequestBody @Valid LoanDto loanDto, @RequestHeader("Authorization") String token) {
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        loanDto.setId(id);
+        Response response = new Response<>();
+        response.setMessage("Loan updated successfully");
+        response.setResult(loanService.UpdateLoan(loanDto, company, idUser));
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/updateStatus/{id}/{status}")
     public ResponseEntity<?> changeLoanStatus(@PathVariable Long id, @RequestHeader("Authorization") String token, @PathVariable String status) {
         Long idUser = JwtUtil.extractUserId(token);
         Company company = userService.getCompanyByUserId(idUser);
