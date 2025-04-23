@@ -1,4 +1,4 @@
-# Server Configuration
+# Server Local
 server:
   port: 8001
   error:
@@ -20,6 +20,11 @@ spring:
     url: jdbc:mysql://localhost:3306/currency-exchange?createDatabaseIfNotExist=true
     username: root
     password:
+#  datasource:
+#    url: jdbc:mysql://currency-exchange-do-user-16876249-0.l.db.ondigitalocean.com:25060/currency_exchange?useSSL=true&requireSSL=true
+#    username: doadmin
+#    password: AVNS__DxXPjX5pm879jlSPpd
+#    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
     hibernate:
@@ -27,7 +32,8 @@ spring:
     generate-ddl: true
 
   liquibase:
-    change-log: classpath:./db/changelog/changelog-master.xml
+#    change-log: classpath:./db/changelog/changelog-master.xml
+    enabled: false
 
 # Google Sheets Configuration
 # Application Configuration
