@@ -34,4 +34,6 @@ public interface UserService {
     public ProfileDto updateUser(ProfileDto profileDto, Long id);
 
     public boolean update_password(UpdatePasswordRequest updatePasswordRequest, Long idUser);
+    public List<UserDto> getEmployeeFunds(Company company);
+
 }

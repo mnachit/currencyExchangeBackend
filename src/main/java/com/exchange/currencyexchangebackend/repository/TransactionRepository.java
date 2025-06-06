@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
-    @Query("select count(t) from Transaction t where t.month = :month")
+    @Query("select count(t) from Transaction t where t.month = :month and t.company = :company")
     BigDecimal countByMonthAndCompany(@Param("month") String month, Company company);
     BigDecimal countByStatusAndCompany(TransactionStatus transactionStatus, Company company);
     List<Transaction> findTop4ByCompanyOrderByCreatedAtDesc(Company company);

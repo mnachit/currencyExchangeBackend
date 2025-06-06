@@ -18,4 +18,5 @@ public interface CurrencyService {
     BigDecimal calculateExchangeRate(String fromCurrency, String toCurrency, BigDecimal amount);
     BigDecimal calculateComission(BigDecimal amount);
     void refreshRates();
+    Optional<Currency> getCurrencyAndBuyRateAndSellRate(String code);
 }

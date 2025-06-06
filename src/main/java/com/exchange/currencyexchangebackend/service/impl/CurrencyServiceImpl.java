@@ -61,4 +61,9 @@ public class CurrencyServiceImpl implements CurrencyService {
     public void refreshRates() {
 
     }
+
+    @Override
+    public Optional<Currency> getCurrencyAndBuyRateAndSellRate(String code) {
+        return Optional.empty();
+    }
 }

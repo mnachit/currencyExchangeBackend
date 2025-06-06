@@ -339,6 +339,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<UserDto> getEmployeeFunds(Company company) {
+        return UserMapper.toUserDtos(userRepository.findByCompany(company));
+    }
+
     public ReportsDto setReportsDto(String name)
     {
         ReportsDto reportsDto = new ReportsDto();

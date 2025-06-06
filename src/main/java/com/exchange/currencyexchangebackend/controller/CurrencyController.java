@@ -42,4 +42,13 @@ public class CurrencyController {
         response.setResult(currencyService.getCurrencyByCode(code));
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/getCurrencyAndBuyRateAndSellRate")
+    public ResponseEntity<?> getCurrencyAndBuyRateAndSellRate(@RequestParam String code) {
+        Response response = new Response<>();
+        response.setMessage("Currency, Buy Rate, and Sell Rate retrieved successfully");
+        response.setStatus(200);
+        response.setResult(currencyService.getCurrencyAndBuyRateAndSellRate(code));
+        return ResponseEntity.ok(response);
+    }
 }

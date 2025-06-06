@@ -1,8 +1,10 @@
 package com.exchange.currencyexchangebackend.service.impl;
 
 import com.exchange.currencyexchangebackend.exception.ValidationException;
+import com.exchange.currencyexchangebackend.model.dto.EmployeeFundsDto;
 import com.exchange.currencyexchangebackend.model.dto.FundBalanceDto;
 import com.exchange.currencyexchangebackend.model.dto.ReportsDto;
+import com.exchange.currencyexchangebackend.model.dto.UserDto;
 import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.model.entity.FundBalance;
 import com.exchange.currencyexchangebackend.model.entity.User;
@@ -10,6 +12,7 @@ import com.exchange.currencyexchangebackend.model.enums.Currency;
 import com.exchange.currencyexchangebackend.model.enums.OperationFunds;
 import com.exchange.currencyexchangebackend.model.enums.TransactionStatus;
 import com.exchange.currencyexchangebackend.model.mapper.FundBalanceMapper;
+import com.exchange.currencyexchangebackend.model.mapper.UserMapper;
 import com.exchange.currencyexchangebackend.repository.FundBalanceRepository;
 import com.exchange.currencyexchangebackend.repository.RecentReportsRepository;
 import com.exchange.currencyexchangebackend.repository.UserRepository;
@@ -69,14 +72,15 @@ public class FundBalanceServiceImpl implements FundBalanceService {
     }
 
     @Override
-    public List<FundBalanceDto> getFundBalanceList(Company company) {
-        return FundBalanceMapper.toDtos(fundBalanceRepository.findTop10ByCompanyOrderByCreatedAtDesc(company));
+    public List<FundBalanceDto> getFundBalanceList(Company company, Long userId) {
+        User user = userRepository.findById(userId).get();
+        return FundBalanceMapper.toDtos(fundBalanceRepository.findTop10ByCompanyAndCreateByOrderByCreatedAtDesc(company, user));
     }
 
     @Override
     public BigDecimal getAvailableBalanceWithCurrency(Long userId, Currency currency, Company company) {
         List<ErrorMessage> errorMessages = new ArrayList<>();
-        Optional<User> user = userRepository.findById(1L);
+        Optional<User> user = userRepository.findById(userId);
         if (!user.isPresent()) {
             errorMessages.add(new ErrorMessage("User not found", 404));
         }
@@ -165,6 +169,49 @@ public class FundBalanceServiceImpl implements FundBalanceService {
                         .build());
                 throw new ValidationException(errorMessages);
             }
+    }
+
+    @Override
+    public EmployeeFundsDto saveEmployeeFunds(EmployeeFundsDto fundBalanceDto, Company company, Long userId) throws ValidationException {
+        FundBalance fundBalance = new FundBalance();
+        fundBalance.setOperationFunds(fundBalanceDto.getOperationFunds());
+        fundBalance.setCurrency(fundBalanceDto.getCurrency());
+        fundBalance.setAmount(fundBalanceDto.getAmount());
+        fundBalance.setNotes(fundBalanceDto.getNotes());
+        fundBalance.setCreatedAt(new Date());
+        fundBalance.setCompany(company);
+        fundBalance.setCreateBy(userRepository.findById(fundBalanceDto.getIdUser()).get());
+        fundBalanceRepository.save(fundBalance);
+        return null;
+    }
+
+    @Override
+    public List<UserDto> getEmployeeFundsList(Company company) {
+        List<User> users = userRepository.findAllByCompany(company);
+        return UserMapper.toUserDtos(users);
+    }
+
+    @Override
+    public List<FundBalanceDto> getEmployeeFundsHistory(Long userId, Company company) {
+        List<Object[]> results = fundBalanceRepository.getTotalAmountByCurrencyAndOperationFunds(userId, company);
+
+        Map<Currency, BigDecimal> currencyBalances = new HashMap<>();
+        for (Object[] result : results) {
+            Currency currency = (Currency) result[0];
+            OperationFunds operationFunds = (OperationFunds) result[1];
+            BigDecimal amount = (BigDecimal) result[2];
+
+            currencyBalances.merge(currency,
+                    operationFunds == OperationFunds.add ? amount : amount.negate(),
+                    BigDecimal::add);
+        }
+
+        return currencyBalances.entrySet().stream()
+                .map(entry -> FundBalanceDto.builder()
+                        .currency(entry.getKey())
+                        .amount(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     /**

@@ -207,4 +207,20 @@ public class UserController {
         }
     }
 
+    @GetMapping("/user/EmployeeFunds")
+    public ResponseEntity<?> getEmployeeFunds(@RequestHeader("Authorization") String token) {
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        Response<List<UserDto>> response = new Response<>();
+        try {
+            response.setResult(userService.getEmployeeFunds(company));
+            response.setMessage("Transactions exported successfully");
+            return ResponseEntity.ok(response);
+        } catch (jakarta.validation.ValidationException e) {
+            response.setMessage("Transactions not exported");
+            return ResponseEntity.ok(response);
+        }
+
+    }
+
 }

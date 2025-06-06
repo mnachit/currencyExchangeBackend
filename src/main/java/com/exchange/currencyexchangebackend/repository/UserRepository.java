@@ -1,5 +1,6 @@
 package com.exchange.currencyexchangebackend.repository;
 
+import com.exchange.currencyexchangebackend.model.dto.UserRegisterRequest;
 import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //getAllUsersWithCompanyNotIdUser
     @Query("SELECT u FROM User u WHERE u.company = :company AND u.id != :userId")
     List<User> getAllUsersWithCompanyNotIdUser(Company company, Long userId);
+
+    List<User> findByCompany(Company company);
+    List<User> findAllByCompany(Company company);
+
 }

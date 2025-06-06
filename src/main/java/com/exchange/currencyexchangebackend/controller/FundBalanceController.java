@@ -1,6 +1,7 @@
 package com.exchange.currencyexchangebackend.controller;
 
 import com.exchange.currencyexchangebackend.config.JwtUtil;
+import com.exchange.currencyexchangebackend.model.dto.EmployeeFundsDto;
 import com.exchange.currencyexchangebackend.model.dto.FundBalanceDto;
 import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.service.FundBalanceService;
@@ -34,7 +35,7 @@ public class FundBalanceController {
         Company company = userService.getCompanyByUserId(idUser);
         Response response = new Response<>();
         response.setMessage("Fund balance list");
-        response.setResult(fundBalanceService.getFundBalanceList(company));
+        response.setResult(fundBalanceService.getFundBalanceList(company, idUser));
         return ResponseEntity.ok(response);
     }
 
@@ -44,7 +45,39 @@ public class FundBalanceController {
         Company company = userService.getCompanyByUserId(idUser);
         Response response = new Response<>();
         response.setMessage("Available balance with currency");
-        response.setResult(fundBalanceService.getAvailableBalanceWithCurrency(fundBalanceDto.getUpdatedById(), fundBalanceDto.getCurrency(), company));
+        response.setResult(fundBalanceService.getAvailableBalanceWithCurrency(idUser, fundBalanceDto.getCurrency(), company));
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("funds/employees/save")
+    public ResponseEntity<?> saveEmployeeFunds(@RequestBody EmployeeFundsDto fundBalanceDto, @RequestHeader("Authorization") String token) {
+        System.out.println("saveEmployeeFunds");
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        Response response = new Response<>();
+        response.setMessage("Employee funds saved successfully");
+        response.setResult(fundBalanceService.saveEmployeeFunds(fundBalanceDto, company, idUser));
+        return ResponseEntity.ok(response);
+    }
+
+//    Employee Funds List
+    @GetMapping("funds/employees/getList")
+    public ResponseEntity<?> getEmployeeFundsList(@RequestHeader("Authorization") String token) {
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        Response response = new Response<>();
+        response.setMessage("Employee funds list");
+        response.setResult(fundBalanceService.getEmployeeFundsList(company));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("funds/employees/history/{userId}")
+    public ResponseEntity<?> getEmployeeFundsHistory(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
+        Long idUser = JwtUtil.extractUserId(token);
+        Company company = userService.getCompanyByUserId(idUser);
+        Response response = new Response<>();
+        response.setMessage("Employee funds history");
+        response.setResult(fundBalanceService.getEmployeeFundsHistory(userId,company));
         return ResponseEntity.ok(response);
     }
 

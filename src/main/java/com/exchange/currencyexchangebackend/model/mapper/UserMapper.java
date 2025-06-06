@@ -5,6 +5,7 @@ import com.exchange.currencyexchangebackend.model.dto.UserRegisterRequest;
 import com.exchange.currencyexchangebackend.model.entity.User;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserMapper {
     public static UserDto toUserDto(User user) {
@@ -20,6 +21,10 @@ public class UserMapper {
                 .address(user.getAddress())
                 .notes(user.getNotes())
                 .build();
+    }
+
+    public static List<UserDto> toUserDtos(List<User> users) {
+        return users.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     public static List<UserDto> toUserDtoList(List<User> users) {

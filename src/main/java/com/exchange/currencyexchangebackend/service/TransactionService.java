@@ -1,10 +1,7 @@
 package com.exchange.currencyexchangebackend.service;
 
 import com.exchange.currencyexchangebackend.exception.ValidationException;
-import com.exchange.currencyexchangebackend.model.dto.ReportsDto;
-import com.exchange.currencyexchangebackend.model.dto.TransactionDto;
-import com.exchange.currencyexchangebackend.model.dto.TransactionDtoFilter;
-import com.exchange.currencyexchangebackend.model.dto.TransactionStatistic;
+import com.exchange.currencyexchangebackend.model.dto.*;
 import com.exchange.currencyexchangebackend.model.entity.Company;
 import com.exchange.currencyexchangebackend.model.entity.User;
 import jakarta.annotation.Resource;
